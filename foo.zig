@@ -73,6 +73,8 @@ pub fn main(init:std.process.Init) !void {
         \\# source
         \\server {
         \\  port = 8945;
+        \\  name = "foo";
+        \\  description = "foo bar baz";
         \\}
     ;
 
