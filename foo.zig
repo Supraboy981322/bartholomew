@@ -113,9 +113,11 @@ pub fn main(init:std.process.Init) !void {
         std.debug.print("{c}", .{b});
 
         if (string != 0 or esc) {
-            if (esc)
-                try mem.append(alloc, b)
-            else if (string == b)
+            // TODO: debug (esc and string == b)
+            if (esc) {
+                try mem.append(alloc, b);
+                esc = false;
+            } else if (string == b)
                 string = 0
             else
                 try mem.append(alloc, b);
