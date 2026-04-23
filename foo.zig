@@ -123,8 +123,12 @@ pub fn main(init:std.process.Init) !void {
         }
 
         if (std.ascii.isWhitespace(b)) continue;
+
         switch (b) {
+
             '=' => {
+                if (name.len > 0)
+                    unreachable; // TODO: error here
                 name = try mem.toOwnedSlice(alloc);
             },
 
@@ -138,6 +142,9 @@ pub fn main(init:std.process.Init) !void {
             ';' => {
                 if (mem.items.len < 1)
                     unreachable; // TODO: error
+
+                defer name = "";
+
                 const is_dig = for (mem.items) |c| {
                     if (!std.ascii.isDigit(c)) break false;
                 } else
