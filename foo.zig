@@ -91,7 +91,10 @@ pub fn main(init:std.process.Init) !void {
     }
 
     var b:u8,
-        var i:?usize = .{ 0, null };
+        var string:u8,
+        var i:?usize,
+        var esc:bool
+            = .{ 0, 0, null, false };
 
     var mem = try std.ArrayList(u8).initCapacity(alloc, 0);
     defer _ = mem.deinit(alloc);
@@ -106,11 +109,30 @@ pub fn main(init:std.process.Init) !void {
         b = src[i.?];
     }) {
         std.debug.print("{c}", .{b});
+
+        if (string != 0 or esc) {
+            if (esc)
+                try mem.append(alloc, b)
+            else if (string == b)
+                string = 0
+            else
+                try mem.append(alloc, b);
+            continue;
+        }
+
         if (std.ascii.isWhitespace(b)) continue;
         switch (b) {
             '=' => {
                 name = try mem.toOwnedSlice(alloc);
             },
+
+            '\\' => if (string != 0) {
+                esc = true;
+            } else
+                unreachable, // TODO: error here
+
+            '"', '\'' => string = b,
+
             ';' => {
                 if (mem.items.len < 1)
                     unreachable; // TODO: error
