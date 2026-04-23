@@ -140,24 +140,32 @@ pub fn main(init:std.process.Init) !void {
                     if (!std.ascii.isDigit(c)) break false;
                 } else
                     true;
+
                 if (is_dig) {
                     _ = try cur_category.append(alloc, .{
                         .number = std.fmt.parseInt(i256, mem.items, 10) catch unreachable,
                     }, name);
                     mem.clearAndFree(alloc);
                     continue;
-                } else {
-                    _ = try cur_category.append(alloc, .{
-                        .string = try mem.toOwnedSlice(alloc),
-                    }, name);
                 }
+
+                _ = try cur_category.append(alloc, .{
+                    .string = try mem.toOwnedSlice(alloc),
+                }, name);
             },
 
             '{' => if (mem.items.len > 0) {
-                const new_category:Entry.EntryValue = .{ .category = try alloc.alloc(Entry, 0) };
-                cur_category = try cur_category.append(alloc, new_category, try mem.toOwnedSlice(alloc));
+                const new_category:Entry.EntryValue = .{
+                    .category = try alloc.alloc(Entry, 0)
+                };
+                cur_category = try cur_category.append(
+                    alloc,
+                    new_category,
+                    try mem.toOwnedSlice(alloc)
+                );
             } else
                 unreachable, // TODO: error here
+
 
             '#' => {
                 i.? += 1;
@@ -172,6 +180,7 @@ pub fn main(init:std.process.Init) !void {
                 if (cur_category.category_depth > 0)
                     cur_category = cur_category.parent_category;
             },
+
             else => try mem.append(alloc, b),
         }
     }
