@@ -8,6 +8,9 @@ pub const SerializeOpts = types.SerializeOpts;
 pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
 
     var cur_category:*Entry = @constCast(&try Entry.init(alloc));
+    errdefer {
+        @constCast(cur_category.get_root() catch unreachable).*.deinit(alloc);
+    }
 
     var b:u8 = if (src.len > 0) src[0] else 0;
     var string:u8,

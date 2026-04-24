@@ -91,6 +91,16 @@ pub const Entry = struct {
             },
         };
     }
+
+    pub fn get_root(self:*Entry) !*Entry {
+        if (self.value != .category)
+            return error.NotCategory;
+        var cur:*Entry = self;
+        return while (!cur.parent_category.is_skeleton) {
+            cur = cur.parent_category;
+        } else
+            cur;
+    }
 };
 
 pub const SerializeOpts = struct {
