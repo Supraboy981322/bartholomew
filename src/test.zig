@@ -8,10 +8,10 @@ test "basic test" {
     defer _ = debug_alloc.deinit();
     const alloc = debug_alloc.allocator();
 
-    var res = bart.parse(alloc, src) catch |e| @panic(@errorName(e));
+    var res = try bart.parse(alloc, src);
     defer res.deinit(alloc);
 
-    const serialized = bart.serialize(alloc, &res) catch |e| @panic(@errorName(e));
+    const serialized = try bart.serialize(alloc, &res);
     defer alloc.free(serialized);
     std.debug.print("{s}\n", .{serialized});
 }
