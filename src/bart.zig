@@ -156,7 +156,7 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
     return cur_category.*;
 }
 
-pub fn serialize(alloc:std.mem.Allocator, in:*Entry) ![]u8 {
+pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) ![]u8 {
     if (in.value != .category)
         return error.NotCategory;
 
@@ -167,21 +167,21 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry) ![]u8 {
     defer res.deinit(alloc);
 
     for (in.value.category) |entry| {
-        for (0..entry.category_depth-1) |_|
-            try res.append(alloc, '\t');
-        try res.print(alloc, "{s} = ", .{entry.name});
+        for (0..(entry.category_depth-1) * opts.tab.width) |_|
+            try res.append(alloc, @intFromEnum(opts.tab.char));
+        try res.print(alloc, "{s} ", .{entry.name});
         switch (entry.value) {
-            .number => |n| try res.print(alloc, "{d};", .{n}),
+            .number => |n| try res.print(alloc, "= {d};", .{n}),
             .string => |str| {
                 const slice = try hlp.quote(alloc, str, '"');
                 defer alloc.free(slice);
-                try res.print(alloc, "{s};", .{slice});
+                try res.print(alloc, "= {s};", .{slice});
             },
             .list => |list| {
-                try res.appendSlice(alloc, "[\n");
+                try res.appendSlice(alloc, "= [\n");
                 for (list) |item| {
-                    for (0..entry.category_depth) |_|
-                        try res.append(alloc, '\t');
+                    for (0..(entry.category_depth) * opts.tab.width) |_|
+                        try res.append(alloc, @intFromEnum(opts.tab.char));
                     switch (item) {
                         .number => |n| try res.print(alloc, "{d}", .{n}),
                         .string => |str| {
@@ -193,16 +193,16 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry) ![]u8 {
                     }
                     try res.append(alloc, '\n');
                 }
-                for (0..entry.category_depth-1) |_|
-                    try res.append(alloc, '\t');
+                for (0..(entry.category_depth-1) * opts.tab.width) |_|
+                    try res.append(alloc, @intFromEnum(opts.tab.char));
                 try res.append(alloc, ']');
             },
             .category => {
-                const slice = try serialize(alloc, entry);
+                const slice = try serialize(alloc, entry, opts);
                 defer alloc.free(slice);
                 try res.print(alloc, "{{\n{s}\n", .{slice});
-                for (0..entry.category_depth-1) |_|
-                    try res.append(alloc, '\t');
+                for (0..(entry.category_depth-1) * opts.tab.width) |_|
+                    try res.append(alloc, @intFromEnum(opts.tab.char));
                 try res.append(alloc, '}');
             },
         }

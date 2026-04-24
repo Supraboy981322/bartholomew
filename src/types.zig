@@ -83,3 +83,13 @@ pub const Entry = struct {
         }
     }
 };
+
+pub const SerializeOpts = struct {
+    tab:struct{
+        width:u3 = 1,
+        char:enum(u8) {
+            tab = '\t',
+            space = ' ',
+        } = .tab,
+    } = .{},
+};
