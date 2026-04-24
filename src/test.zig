@@ -59,3 +59,23 @@ test "empty input" {
     defer alloc.free(serialized);
     try std.testing.expectEqualSlices(u8, "", serialized);
 }
+
+test "bad input" {
+    var debug_alloc = std.heap.DebugAllocator(.{}).init;
+    defer _ = debug_alloc.deinit();
+    const alloc = debug_alloc.allocator();
+
+    var io = std.Io.Threaded.init(alloc, .{});
+    defer io.deinit();
+
+    const random = (std.Random.IoSource{ .io = io.io() }).interface();
+    comptime var chars:[]u8 = @constCast("{};[]=" ++ std.ascii.letters);
+    inline for ('0'..'9'+1) |b| chars = @constCast(chars ++ [_]u8{b});
+
+    for (0..10) |_| {
+        var buf:[1024]u8 = undefined;
+        for (buf, 0..) |_, i|
+            buf[i] = chars[random.uintAtMost(usize, chars.len-1)];
+        if (try bart.validate(alloc, &buf)) unreachable; //returned that Bartholomew is valid (bad) (garbage input)
+    }
+}
