@@ -12,7 +12,7 @@ pub const Entry = struct {
     pub const EntryValue = union(enum) {
         string:[]u8,
         number:i256, //why not?
-        category:[]Entry,
+        category:[]*Entry,
         list:[]EntryValue,
     };
 
@@ -21,32 +21,41 @@ pub const Entry = struct {
         .value = .{ .number = 0 },
         .parent_category = @constCast(&Entry.skeleton),
         .category_depth = 0,
+        .is_skeleton = true,
     };
 
     pub fn append(self:*Entry, alloc:std.mem.Allocator, thing:EntryValue, name:[]u8) !*Entry {
         assert(name.len > 0);
         if (self.value != .category)
             return error.Notcategory;
-        var new = try alloc.alloc(Entry, self.value.category.len + 1);
-        for (self.value.category, 0..) |entry, i|
-            new[i] = entry;
-        new[new.len-1] = .{
+
+        var entry = try alloc.create(Entry);//, self.value.category.len + 1);
+        entry.* = .{
             .name = name,
-            .value = thing
+            .value = thing,
+            .category_depth = self.category_depth + 1,
         };
+
+        var new = try alloc.alloc(*Entry, self.value.category.len + 1);
+
+        for (self.value.category, 0..) |old, i|
+            new[i] = old;
+        new[new.len-1] = entry;
+
         alloc.free(self.value.category);
         self.value.category = new;
-        var new_entry:*Entry = @constCast(&self.value.category[self.value.category.len - 1]);
-        new_entry.category_depth = self.category_depth + 1;
+
         if (thing == .category) {
-            new_entry.parent_category = self;
-            assert(new_entry.parent_category.category_depth == self.category_depth);
+            entry.parent_category = self;
+            assert(entry.parent_category.category_depth == self.category_depth);
         }
-        return new_entry;
+
+        return entry;
     }
 
     pub fn deinit(self:*Entry, alloc:std.mem.Allocator) void {
-        if (!self.is_skeleton)
+        if (self.is_skeleton) return;
+        if (self.value != .category)
             alloc.free(self.name);
         switch (self.value) {
             .number => {},
@@ -54,8 +63,10 @@ pub const Entry = struct {
             .string => |str| alloc.free(str),
 
             .category => |category| {
-                for (category) |*entry|
+                for (category) |entry| {
                     @constCast(entry).deinit(alloc);
+                    alloc.destroy(entry);
+                }
                 alloc.free(category);
             },
 
@@ -68,5 +79,7 @@ pub const Entry = struct {
                 alloc.free(list);
             }
         }
+        if (self.value == .category)
+            alloc.free(self.name);
     }
 };

@@ -8,7 +8,7 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
     var cur_category:*Entry = @constCast(&Entry{
         .name = try alloc.dupe(u8, "root"),
         .value = .{
-            .category = try alloc.alloc(Entry, 0)
+            .category = try alloc.alloc(*Entry, 0)
         }, 
     });
 
@@ -106,7 +106,7 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
 
             '{' => if (mem.items.len > 0) {
                 const new_category:Entry.EntryValue = .{
-                    .category = try alloc.alloc(Entry, 0)
+                    .category = try alloc.alloc(*Entry, 0)
                 };
                 cur_category = try cur_category.append(
                     alloc,
