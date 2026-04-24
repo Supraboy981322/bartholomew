@@ -7,6 +7,7 @@ pub const Entry = struct {
     value:EntryValue,
     parent_category:*Entry = @constCast(&Entry.skeleton),
     category_depth:usize = 0,
+    is_skeleton:bool = false,
 
     pub const EntryValue = union(enum) {
         string:[]u8,
@@ -44,7 +45,8 @@ pub const Entry = struct {
     }
 
     pub fn deinit(self:*Entry, alloc:std.mem.Allocator) void {
-        alloc.free(self.name);
+        if (!self.is_skeleton)
+            alloc.free(self.name);
         switch (self.value) {
             .number => {},
 
