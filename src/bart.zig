@@ -232,3 +232,18 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) !
 
     return res.toOwnedSlice(alloc);
 }
+
+pub fn validate(alloc:std.mem.Allocator, src:[]u8) !bool {
+    var arena = std.heap.ArenaAllocator.init(alloc);
+    defer _ = arena.deinit();
+
+    var res = parse(arena.allocator(), src) catch |e|
+        return
+            if (e != error.OutOfMemory)
+                false
+            else
+                e; //OOM
+
+    res.deinit(alloc);
+    return true;
+}
