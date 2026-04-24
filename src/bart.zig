@@ -15,9 +15,9 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
 
     var b:u8,
         var string:u8,
-        var i:?usize,
+        var i:usize,
         var esc:bool
-            = .{ 0, 0, null, false };
+            = .{ src[0], 0, 0, false };
 
     var mem = try std.ArrayList(u8).initCapacity(alloc, 0);
     defer _ = mem.deinit(alloc);
@@ -29,11 +29,11 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
     var name:[]u8 = "";
 
     while (
-        if (i) |idx| idx < src.len else true
+        i < src.len
     ) : ({
-        i = if (i) |idx| idx + 1 else 0;
-        if (i.? >= src.len) break;
-        b = src[i.?];
+        i += 1;
+        if (i >= src.len) break;
+        b = src[i];
     }) {
 
         if (string != 0 or esc) {
@@ -142,8 +142,8 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
 
             // TODO: move this out of switch statement
             '#' => {
-                i.? += 1;
-                while (src[i.?] != '\n') : (i.? += 1) {}
+                i += 1;
+                while (src[i] != '\n') : (i += 1) {}
                 continue;
             },
 
