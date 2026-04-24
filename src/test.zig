@@ -40,3 +40,22 @@ test "serialize test" {
     defer alloc.free(serialized);
     try std.testing.expectEqualSlices(u8, src, serialized);
 }
+
+test "empty input" {
+    var debug_alloc = std.heap.DebugAllocator(.{}).init;
+    defer _ = debug_alloc.deinit();
+    const alloc = debug_alloc.allocator();
+
+    var res = try bart.parse(alloc, @constCast(""));
+    defer res.deinit(alloc);
+
+    for ([_]bool{
+        std.mem.eql(u8, res.name, "root"),
+        res.value.category.len == 0,
+    }) |check|
+        assert(check);
+
+    const serialized = try bart.serialize(alloc, &res, .default);
+    defer alloc.free(serialized);
+    try std.testing.expectEqualSlices(u8, "", serialized);
+}
