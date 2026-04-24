@@ -25,7 +25,17 @@ pub const Entry = struct {
         .is_skeleton = true,
     };
 
-    pub fn append(self:*Entry, alloc:std.mem.Allocator, thing:EntryValue, name:[]u8) !*Entry {
+    pub const AppendError = error{
+        NoName,
+        NotCategory,
+    };
+
+    pub fn append(
+        self:*Entry,
+        alloc:std.mem.Allocator,
+        thing:EntryValue,
+        name:[]u8
+    ) (error{OutOfMemory} || AppendError)!*Entry {
         if (name.len < 1)
             return error.NoName;
         if (self.value != .category)
@@ -149,3 +159,14 @@ pub const SerializeOpts = struct {
         return new;
     }
 };
+
+pub const ParseError = error{
+    UncaughtNumberError,
+    UnexpectedEqualSign,
+    UnexpectedBackslash,
+    UnexpectedSemiColon,
+    UnexpectedOpenBrace,
+    UnexpectedCloseBrace,
+    UnexpectedOpenBracket,
+    UnexpectedCloseBracket,
+} || Entry.AppendError;
