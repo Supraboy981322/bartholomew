@@ -25,6 +25,7 @@ pub const Entry = struct {
     pub const EntryValue = union(enum) {
         string:[]u8,
         number:i256, //why not?
+        bool:bool,
         category:[]*Entry,
         list:[]EntryValue,
     };
@@ -82,7 +83,7 @@ pub const Entry = struct {
         if (self.value != .category or !self.parent_category.is_skeleton)
             alloc.free(self.name);
         switch (self.value) {
-            .number => {},
+            .number, .bool => {},
 
             .string => |str| alloc.free(str),
 
@@ -97,7 +98,7 @@ pub const Entry = struct {
             .list => |list| {
                 for (list) |entry| switch (entry) {
                     .string => |str| alloc.free(str),
-                    .number => {},
+                    .number, .bool => {},
                     else => unreachable, //lists cannot (currently) have anything else
                 };
                 alloc.free(list);

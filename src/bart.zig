@@ -174,6 +174,9 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) !
                 defer alloc.free(slice);
                 try res.print(alloc, "= {s};", .{slice});
             },
+
+            .bool => |v| try res.print(alloc, "{};", .{v}),
+
             .list => |list| {
                 try res.appendSlice(alloc, "= [\n");
                 for (list) |item| {
@@ -186,6 +189,7 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) !
                             defer alloc.free(slice);
                             try res.appendSlice(alloc, slice);
                         },
+                        .bool => |v| try res.print(alloc, "{}", .{v}),
                         else => unreachable,
                     }
                     try res.append(alloc, '\n');

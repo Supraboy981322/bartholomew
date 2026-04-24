@@ -3,10 +3,12 @@
 server {
   port = 8945;
   name = "foo";
+  bar = false;
   description = "foo bar baz";
   foo = [
     1
     9875
     "foo bar baz"
+    true
   ]
 }
