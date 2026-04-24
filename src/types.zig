@@ -39,7 +39,7 @@ pub const Entry = struct {
         if (name.len < 1)
             return error.NoName;
         if (self.value != .category)
-            return error.Notcategory;
+            return error.NotCategory;
 
         var entry = try alloc.create(Entry);//, self.value.category.len + 1);
         entry.* = .{
