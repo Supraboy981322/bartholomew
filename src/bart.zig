@@ -55,18 +55,7 @@ pub fn parse(
         if (std.ascii.isWhitespace(b)) {
             if (cur_list) |*list| if (mem.items.len > 0) {
                 defer mem.clearAndFree(alloc);
-
-                const is_dig = for (mem.items) |c| {
-                    if (!std.ascii.isDigit(c)) break false;
-                } else
-                    true;
-
-                const new:Entry.EntryValue = if (is_dig) .{
-                    .number = std.fmt.parseInt(i256, mem.items, 10) catch return error.UncaughtNumberError,
-                } else .{
-                    .string = try mem.toOwnedSlice(alloc)
-                };
-
+                const new = try hlp.parse_value(alloc, mem.items);
                 try list.append(alloc, new);
             };
             continue;
@@ -91,23 +80,12 @@ pub fn parse(
             ';' => {
                 if (mem.items.len < 1)
                     return error.UnexpectedSemiColon;
-
-                defer name = "";
-
-                const is_dig = for (mem.items) |c| {
-                    if (!std.ascii.isDigit(c)) break false;
-                } else
-                    true;
-
-                const new:Entry.EntryValue = if (is_dig) .{
-                    .number = std.fmt.parseInt(i256, mem.items, 10) catch return error.UncaughtNumberError,
-                } else .{
-                    .string = try mem.toOwnedSlice(alloc)
-                };
-
+                defer {
+                    name = "";
+                    mem.clearAndFree(alloc);
+                }
+                const new = try hlp.parse_value(alloc, mem.items);
                 _ = try cur_category.append(alloc, new, name);
-
-                mem.clearAndFree(alloc);
             },
 
             '{' => if (mem.items.len > 0) {
