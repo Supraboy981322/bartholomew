@@ -56,6 +56,7 @@ pub const Entry = struct {
             .category => |category| {
                 for (category) |*entry|
                     @constCast(entry).deinit(alloc);
+                alloc.free(category);
             },
 
             .list => |list| {
