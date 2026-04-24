@@ -57,7 +57,7 @@ pub const Entry = struct {
 
     pub fn deinit(self:*Entry, alloc:std.mem.Allocator) void {
         if (self.is_skeleton) return;
-        if (self.value != .category)
+        if (self.value != .category or !self.parent_category.is_skeleton)
             alloc.free(self.name);
         switch (self.value) {
             .number => {},
@@ -81,7 +81,5 @@ pub const Entry = struct {
                 alloc.free(list);
             }
         }
-        if (self.value == .category)
-            alloc.free(self.name);
     }
 };
