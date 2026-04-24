@@ -8,6 +8,9 @@ test "basic test" {
     defer _ = debug_alloc.deinit();
     const alloc = debug_alloc.allocator();
 
-    var res = try bart.parse(alloc, src);
+    var threaded = std.Io.Threaded.init(alloc, .{});
+    defer threaded.deinit();
+
+    var res = bart.parse(alloc, src) catch |e| @panic(@errorName(e));
     defer res.deinit(alloc);
 }

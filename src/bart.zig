@@ -3,7 +3,7 @@ const types = @import("types.zig");
 
 const Entry = types.Entry;
 
-pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
+pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
 
     var cur_category:*Entry = @constCast(&Entry{
         .name = @constCast("root"),
@@ -138,6 +138,7 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
                     return error.UnexpectedCloseBracket;
             },
 
+            // TODO: move this out of switch statement
             '#' => {
                 i.? += 1;
                 while (src[i.?] != '\n') : (i.? += 1) {}
