@@ -24,6 +24,7 @@ pub const Entry = struct {
     };
 
     pub fn append(self:*Entry, alloc:std.mem.Allocator, thing:EntryValue, name:[]u8) !*Entry {
+        assert(name.len > 0);
         if (self.value != .category)
             return error.Notcategory;
         var new = try alloc.alloc(Entry, self.value.category.len + 1);
