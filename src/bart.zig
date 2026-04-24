@@ -4,6 +4,7 @@ const types = @import("types.zig");
 const Entry = types.Entry;
 
 pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
+
     var cur_category:*Entry = @constCast(&Entry{
         .name = try alloc.dupe(u8, "root"),
         .value = .{
@@ -147,8 +148,7 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
         }
     }
 
-    while (cur_category.category_depth > 0) {
+    while (cur_category.category_depth > 0)
         cur_category = cur_category.parent_category;
-    }
     return cur_category;
 }
