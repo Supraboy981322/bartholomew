@@ -208,5 +208,6 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) !
         }
         try res.append(alloc, '\n');
     }
+    _ = res.pop(); //remove trailing newline
     return res.toOwnedSlice(alloc);
 }
