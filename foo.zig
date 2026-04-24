@@ -10,6 +10,7 @@ const Entry = struct {
         string:[]u8,
         number:i256, //why not?
         category:[]Entry,
+        list:[]EntryValue,
     };
 
     pub const skeleton:Entry = .{
@@ -60,6 +61,25 @@ const Entry = struct {
             .number => |n| {
                 std.debug.print("= {d}\n", .{n});
             },
+            .list => |list| {
+                std.debug.print("= [\n", .{});
+                for (list) |entry| {
+                    for (0..self.category_depth+1) |_|
+                        std.debug.print("  ", .{});
+                    switch (entry) {
+                        .string => |str| {
+                            std.debug.print("{s}\n", .{str});
+                            alloc.free(str);
+                        },
+                        .number => |n| std.debug.print("{d}\n", .{n}),
+                        else => unreachable,
+                    }
+                }
+                alloc.free(list);
+                for (0..self.category_depth) |_|
+                    std.debug.print("  ", .{});
+                std.debug.print("]\n", .{});
+            }
         }
     }
 };
@@ -75,8 +95,12 @@ pub fn main(init:std.process.Init) !void {
         \\  port = 8945;
         \\  name = "foo";
         \\  description = "foo bar baz";
+        \\  foo = [
+        \\    1
+        \\  ]
         \\}
     ;
+    std.debug.print("{s}", .{src});
 
     var cur_category:*Entry = @constCast(&Entry{
         .name = try alloc.dupe(u8, "root"),
@@ -101,6 +125,10 @@ pub fn main(init:std.process.Init) !void {
     var mem = try std.ArrayList(u8).initCapacity(alloc, 0);
     defer _ = mem.deinit(alloc);
 
+    var cur_list:?std.ArrayList(Entry.EntryValue) = null;
+    defer if (cur_list) |*list|
+        list.deinit(alloc);
+
     var name:[]u8 = "";
 
     while (
@@ -110,7 +138,6 @@ pub fn main(init:std.process.Init) !void {
         if (i.? >= src.len) break;
         b = src[i.?];
     }) {
-        std.debug.print("{c}", .{b});
 
         if (string != 0 or esc) {
             // TODO: debug (esc and string == b)
@@ -124,7 +151,29 @@ pub fn main(init:std.process.Init) !void {
             continue;
         }
 
-        if (std.ascii.isWhitespace(b)) continue;
+        blk: {
+            if (std.ascii.isWhitespace(b) and cur_list == null)
+                continue
+            else if (cur_list) |*list| if (mem.items.len > 0) {
+                if (b == ']')
+                    break :blk;
+
+                const is_dig = for (mem.items) |c| {
+                    if (!std.ascii.isDigit(c)) break false;
+                } else
+                    true;
+
+                const new:Entry.EntryValue = if (is_dig) .{
+                    .number = std.fmt.parseInt(i256, mem.items, 10) catch unreachable,
+                } else .{
+                    .string = try mem.toOwnedSlice(alloc)
+                };
+                try list.append(alloc, new);
+                mem.clearAndFree(alloc);
+                continue;
+            } else if (std.ascii.isWhitespace(b))
+                    continue;
+        }
 
         switch (b) {
 
@@ -152,17 +201,15 @@ pub fn main(init:std.process.Init) !void {
                 } else
                     true;
 
-                if (is_dig) {
-                    _ = try cur_category.append(alloc, .{
-                        .number = std.fmt.parseInt(i256, mem.items, 10) catch unreachable,
-                    }, name);
-                    mem.clearAndFree(alloc);
-                    continue;
-                }
+                const new:Entry.EntryValue = if (is_dig) .{
+                    .number = std.fmt.parseInt(i256, mem.items, 10) catch unreachable,
+                } else .{
+                    .string = try mem.toOwnedSlice(alloc)
+                };
 
-                _ = try cur_category.append(alloc, .{
-                    .string = try mem.toOwnedSlice(alloc),
-                }, name);
+                _ = try cur_category.append(alloc, new, name);
+
+                mem.clearAndFree(alloc);
             },
 
             '{' => if (mem.items.len > 0) {
@@ -177,19 +224,32 @@ pub fn main(init:std.process.Init) !void {
             } else
                 unreachable, // TODO: error here
 
-
-            '#' => {
-                i.? += 1;
-                while (src[i.?] != '\n') : (i.? += 1) {
-                    std.debug.print("{c}", .{src[i.?]});
-                }
-                std.debug.print("\n", .{});
-                continue;
-            },
-
             '}' => {
                 if (cur_category.category_depth > 0)
                     cur_category = cur_category.parent_category;
+            },
+            
+            '[' => {
+                if (cur_list) |_|
+                    unreachable; // TODO: error here
+                cur_list = try std.ArrayList(Entry.EntryValue).initCapacity(alloc, 0);
+            },
+
+            ']' => {
+                if (cur_list) |*list| {
+                    _ = try cur_category.append(alloc, .{
+                        .list = try list.toOwnedSlice(alloc),
+                    }, name);
+                    list.deinit(alloc);
+                    cur_list = null;
+                } else
+                    unreachable; // TODO: error here
+            },
+
+            '#' => {
+                i.? += 1;
+                while (src[i.?] != '\n') : (i.? += 1) {}
+                continue;
             },
 
             else => try mem.append(alloc, b),
