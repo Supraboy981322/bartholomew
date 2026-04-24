@@ -85,11 +85,48 @@ pub const Entry = struct {
 };
 
 pub const SerializeOpts = struct {
-    tab:struct{
-        width:u3 = 1,
-        char:enum(u8) {
-            tab = '\t',
-            space = ' ',
-        } = .tab,
-    } = .{},
+    skip_root:bool = true,
+    tab:TabOpts = .{
+        .width = 1,
+        .char = '\t',
+    },
+
+    pub const TabOpts = struct {
+        width:u3,
+        char:u8,
+
+        pub const none = TabOpts{
+            .width = 0,
+            .char = 0,
+        };
+    };
+
+    pub const default:SerializeOpts = .{};
+
+    pub fn compact(self:SerializeOpts) SerializeOpts {
+        var new = self;
+        new.tab = .none;
+        return new;
+    }
+
+    pub fn include_root(self:SerializeOpts) SerializeOpts {
+        var new = self;
+        new.skip_root = false;
+        return new;
+    }
+
+    pub fn set_tab(self:SerializeOpts, char:u8) SerializeOpts {
+        var new = self;
+        new.tab = .{
+            .width = 1,
+            .char = char,
+        };
+        return new;
+    }
+
+    pub fn expand_tab(self:SerializeOpts, width:u3) SerializeOpts {
+        var new = self;
+        new.tab.width = width;
+        return new;
+    }
 };

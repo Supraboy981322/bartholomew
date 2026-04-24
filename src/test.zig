@@ -35,12 +35,8 @@ test "serialize test" {
     var res = try bart.parse(alloc, src);
     defer res.deinit(alloc);
 
-    const serialized = try bart.serialize(alloc, &res, .{
-        .tab = .{
-            .char = .space,
-            .width = 2,
-        }
-    });
+    const opts = @as(bart.SerializeOpts, .default).set_tab(' ').expand_tab(2);
+    const serialized = try bart.serialize(alloc, &res, opts);
     defer alloc.free(serialized);
     try std.testing.expectEqualSlices(u8, src, serialized);
 }
