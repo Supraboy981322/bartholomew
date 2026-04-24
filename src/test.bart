@@ -1,0 +1,12 @@
+# basic Bartholomew test file
+
+server {
+  port = 8945;
+  name = "foo";
+  description = "foo bar baz";
+  foo = [
+    1
+    9875
+    "foo bar baz"
+  ]
+}
