@@ -13,11 +13,11 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
         }, 
     });
 
-    var b:u8,
-        var string:u8,
+    var b:u8 = if (src.len > 0) src[0] else 0;
+    var string:u8,
         var i:usize,
         var esc:bool
-            = .{ src[0], 0, 0, false };
+            = .{ 0, 0, false };
 
     var mem = try std.ArrayList(u8).initCapacity(alloc, 0);
     defer _ = mem.deinit(alloc);
