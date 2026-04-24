@@ -82,6 +82,15 @@ pub const Entry = struct {
             }
         }
     }
+
+    pub fn init(alloc:std.mem.Allocator) !Entry {
+        return .{
+            .name = @constCast("root"),
+            .value = .{
+                .category = try alloc.alloc(*Entry, 0),
+            },
+        };
+    }
 };
 
 pub const SerializeOpts = struct {
