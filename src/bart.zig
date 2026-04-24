@@ -157,6 +157,7 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
 }
 
 pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) ![]u8 {
+
     if (in.value != .category)
         return error.NotCategory;
 

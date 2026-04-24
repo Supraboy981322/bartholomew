@@ -42,7 +42,5 @@ test "serialize test" {
         }
     });
     defer alloc.free(serialized);
-    if (!std.mem.eql(u8, serialized, src)) {
-        try std.testing.expectEqualSlices(u8, src, serialized);
-    }
+    try std.testing.expectEqualSlices(u8, src, serialized);
 }
