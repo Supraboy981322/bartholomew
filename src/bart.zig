@@ -3,7 +3,6 @@ const hlp = @import("helpers.zig");
 const types = @import("types.zig");
 
 const Entry = types.Entry;
-const assert = std.debug.assert;
 
 pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
 
@@ -161,7 +160,8 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry) ![]u8 {
     if (in.value != .category)
         return error.NotCategory;
 
-    assert(!in.is_skeleton);
+    if (in.is_skeleton)
+        return error.IsSkeleton;
 
     var res = try std.ArrayList(u8).initCapacity(alloc, 0);
     defer res.deinit(alloc);
