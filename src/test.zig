@@ -1,7 +1,9 @@
 const std = @import("std");
 const bart = @import("bart.zig");
 
-test "basic test" {
+const assert = std.debug.assert;
+
+test "parse test" {
     const src:[]u8 = @constCast(@embedFile("test.bart"));
 
     var debug_alloc = std.heap.DebugAllocator(.{}).init;
