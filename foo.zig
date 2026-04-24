@@ -153,12 +153,9 @@ pub fn main(init:std.process.Init) !void {
             continue;
         }
 
-        blk: {
-            if (std.ascii.isWhitespace(b) and cur_list == null)
-                continue
-            else if (cur_list) |*list| if (mem.items.len > 0) {
-                if (b == ']')
-                    break :blk;
+        if (std.ascii.isWhitespace(b)) {
+            if (cur_list) |*list| if (mem.items.len > 0) {
+                defer mem.clearAndFree(alloc);
 
                 const is_dig = for (mem.items) |c| {
                     if (!std.ascii.isDigit(c)) break false;
@@ -170,11 +167,10 @@ pub fn main(init:std.process.Init) !void {
                 } else .{
                     .string = try mem.toOwnedSlice(alloc)
                 };
+
                 try list.append(alloc, new);
-                mem.clearAndFree(alloc);
-                continue;
-            } else if (std.ascii.isWhitespace(b))
-                    continue;
+            };
+            continue;
         }
 
         switch (b) {
