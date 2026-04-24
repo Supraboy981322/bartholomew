@@ -2,7 +2,8 @@ const std = @import("std");
 const hlp = @import("helpers.zig");
 const types = @import("types.zig");
 
-const Entry = types.Entry;
+pub const Entry = types.Entry;
+pub const SerializeOpts = types.SerializeOpts;
 
 pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
 
