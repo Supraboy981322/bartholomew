@@ -135,7 +135,7 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
                     list.deinit(alloc);
                     cur_list = null;
                 } else
-                    unreachable; // TODO: error here
+                    return error.UnexpectedCloseBracket;
             },
 
             '#' => {
