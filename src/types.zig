@@ -2,6 +2,17 @@ const std = @import("std");
 
 const assert = std.debug.assert;
 
+pub const ParseError = error{
+    UncaughtNumberError,
+    UnexpectedEqualSign,
+    UnexpectedBackslash,
+    UnexpectedSemiColon,
+    UnexpectedOpenBrace,
+    UnexpectedCloseBrace,
+    UnexpectedOpenBracket,
+    UnexpectedCloseBracket,
+} || Entry.AppendError;
+
 pub const Entry = struct {
     name:[]u8,
     value:EntryValue,
@@ -159,14 +170,3 @@ pub const SerializeOpts = struct {
         return new;
     }
 };
-
-pub const ParseError = error{
-    UncaughtNumberError,
-    UnexpectedEqualSign,
-    UnexpectedBackslash,
-    UnexpectedSemiColon,
-    UnexpectedOpenBrace,
-    UnexpectedCloseBrace,
-    UnexpectedOpenBracket,
-    UnexpectedCloseBracket,
-} || Entry.AppendError;
