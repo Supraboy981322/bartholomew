@@ -169,7 +169,7 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) !
     defer res.deinit(alloc);
 
     const tab_offset:usize = if (!opts.skip_root) b: {
-        try res.appendSlice(alloc, "root {\n");
+        try res.print(alloc, "{s} {{\n", .{in.name});
         break :b 1;
     } else
         0;
