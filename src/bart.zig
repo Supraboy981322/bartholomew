@@ -4,8 +4,13 @@ const types = @import("types.zig");
 
 pub const Entry = types.Entry;
 pub const SerializeOpts = types.SerializeOpts;
+pub const AppendError = types.Entry.AppendError;
+pub const ParseError = types.ParseError;
 
-pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
+pub fn parse(
+    alloc:std.mem.Allocator,
+    src:[]u8
+) (error{OutOfMemory} || ParseError)!Entry {
 
     var cur_category:*Entry = @constCast(&try Entry.init(alloc));
     errdefer {
