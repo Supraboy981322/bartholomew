@@ -57,7 +57,7 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
                     true;
 
                 const new:Entry.EntryValue = if (is_dig) .{
-                    .number = std.fmt.parseInt(i256, mem.items, 10) catch unreachable,
+                    .number = std.fmt.parseInt(i256, mem.items, 10) catch return error.UncaughtNumberError,
                 } else .{
                     .string = try mem.toOwnedSlice(alloc)
                 };
@@ -71,20 +71,20 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
 
             '=' => {
                 if (name.len > 0)
-                    unreachable; // TODO: error here
+                    return error.UnexpectedEqualSign;
                 name = try mem.toOwnedSlice(alloc);
             },
 
             '\\' => if (string != 0) {
                 esc = true;
             } else
-                unreachable, // TODO: error here
+                return error.UnexpectedBackslash,
 
             '"', '\'' => string = b,
 
             ';' => {
                 if (mem.items.len < 1)
-                    unreachable; // TODO: error
+                    return error.UnexpectedSemiColon;
 
                 defer name = "";
 
@@ -94,7 +94,7 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
                     true;
 
                 const new:Entry.EntryValue = if (is_dig) .{
-                    .number = std.fmt.parseInt(i256, mem.items, 10) catch unreachable,
+                    .number = std.fmt.parseInt(i256, mem.items, 10) catch return error.UncaughtNumberError,
                 } else .{
                     .string = try mem.toOwnedSlice(alloc)
                 };
@@ -114,7 +114,7 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
                     try mem.toOwnedSlice(alloc)
                 );
             } else
-                unreachable, // TODO: error here
+                return error.UnexpectedOpenBrace,
 
             '}' => {
                 if (cur_category.category_depth > 0)
@@ -123,7 +123,7 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
             
             '[' => {
                 if (cur_list) |_|
-                    unreachable; // TODO: error here
+                    return error.UnexpectedOpenBracket;
                 cur_list = try std.ArrayList(Entry.EntryValue).initCapacity(alloc, 0);
             },
 

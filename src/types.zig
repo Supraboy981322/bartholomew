@@ -25,7 +25,8 @@ pub const Entry = struct {
     };
 
     pub fn append(self:*Entry, alloc:std.mem.Allocator, thing:EntryValue, name:[]u8) !*Entry {
-        assert(name.len > 0);
+        if (name.len < 1)
+            return error.NoName;
         if (self.value != .category)
             return error.Notcategory;
 
@@ -74,7 +75,7 @@ pub const Entry = struct {
                 for (list) |entry| switch (entry) {
                     .string => |str| alloc.free(str),
                     .number => {},
-                    else => unreachable,
+                    else => unreachable, //lists cannot (currently) have anything else
                 };
                 alloc.free(list);
             }
