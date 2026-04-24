@@ -97,6 +97,8 @@ pub fn main(init:std.process.Init) !void {
         \\  description = "foo bar baz";
         \\  foo = [
         \\    1
+        \\    9875
+        \\    "foo bar baz"
         \\  ]
         \\}
     ;
