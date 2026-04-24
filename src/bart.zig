@@ -6,7 +6,7 @@ const Entry = types.Entry;
 pub fn parse(alloc:std.mem.Allocator, src:[]u8) !*Entry {
 
     var cur_category:*Entry = @constCast(&Entry{
-        .name = try alloc.dupe(u8, "root"),
+        .name = @constCast("root"),
         .value = .{
             .category = try alloc.alloc(*Entry, 0)
         }, 
