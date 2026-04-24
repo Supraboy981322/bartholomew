@@ -13,4 +13,8 @@ test "basic test" {
 
     var res = bart.parse(alloc, src) catch |e| @panic(@errorName(e));
     defer res.deinit(alloc);
+
+    const serialized = bart.serialize(alloc, &res) catch |e| @panic(@errorName(e));
+    defer alloc.free(serialized);
+    std.debug.print("{s}\n", .{serialized});
 }
