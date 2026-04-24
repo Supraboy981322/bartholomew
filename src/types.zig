@@ -8,6 +8,7 @@ pub const Entry = struct {
     parent_category:*Entry = @constCast(&Entry.skeleton),
     category_depth:usize = 0,
     is_skeleton:bool = false,
+    string_type:?u8 = null,
 
     pub const EntryValue = union(enum) {
         string:[]u8,

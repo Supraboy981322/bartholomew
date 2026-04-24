@@ -1,4 +1,5 @@
 const std = @import("std");
+const hlp = @import("helpers.zig");
 const types = @import("types.zig");
 
 const Entry = types.Entry;
@@ -80,7 +81,8 @@ pub fn parse(alloc:std.mem.Allocator, src:[]u8) !Entry {
             } else
                 return error.UnexpectedBackslash,
 
-            '"', '\'' => string = b,
+            // TODO: maybe a little refactor for single quote
+            '"' => string = b,
 
             ';' => {
                 if (mem.items.len < 1)
