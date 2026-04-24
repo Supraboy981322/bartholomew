@@ -133,6 +133,9 @@ pub fn parse(
         }
     }
 
+    if (mem.items.len > 0)
+        return error.UnexpectedEOF;
+
     while (cur_category.category_depth > 0)
         cur_category = cur_category.parent_category;
     return cur_category.*;
