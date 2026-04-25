@@ -168,3 +168,16 @@ test "test the example" {
 
     try std.testing.expectEqualSlices(u8, src, serialized);
 }
+
+test "traversal basic" {
+    const src =
+        \\foo = "bar";
+    ;
+
+    const alloc = std.testing.allocator;
+    var res = try bart.parse(alloc, @constCast(src));
+    defer res.deinit(alloc);
+
+    const value = try res.traverse(.string, "foo");
+    try std.testing.expectEqualSlices(u8, value, "bar");
+}
