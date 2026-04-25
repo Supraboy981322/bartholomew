@@ -1,6 +1,9 @@
 const std = @import("std");
 const types = @import("types.zig");
 
+const Entry = types.Entry;
+const EntryValue = Entry.EntryValue;
+
 pub fn quote(alloc:std.mem.Allocator, raw:[]u8, string_type:u8) ![]u8 {
     var res = try std.ArrayList(u8).initCapacity(alloc, raw.len);
     defer res.deinit(alloc);
@@ -17,7 +20,7 @@ pub fn quote(alloc:std.mem.Allocator, raw:[]u8, string_type:u8) ![]u8 {
     return res.toOwnedSlice(alloc);
 }
 
-pub fn looks_like(in:[]u8) std.meta.Tag(types.Entry.EntryValue) {
+pub fn looks_like(in:[]u8) std.meta.Tag(EntryValue) {
     _ = for (in) |b| {
         if (!std.ascii.isDigit(b)) break null;
     } else
@@ -30,7 +33,7 @@ pub fn looks_like(in:[]u8) std.meta.Tag(types.Entry.EntryValue) {
             .string;
 }
 
-pub fn parse_value(alloc:std.mem.Allocator, in:[]u8) !types.Entry.EntryValue {
+pub fn parse_value(alloc:std.mem.Allocator, in:[]u8) !EntryValue {
     return switch (looks_like(in)) {
         .bool => .{ .bool = std.mem.eql(u8, "true", in) },
         .string => .{ .string = try alloc.dupe(u8, in) },
