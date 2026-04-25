@@ -113,3 +113,12 @@ test "quote string" {
     defer alloc.free(quoted);
     try std.testing.expectEqualSlices(u8, "\"foo\"", quoted);
 }
+
+test "single field" {
+    const alloc = std.testing.allocator;
+    const src = @constCast(
+        \\foo = "bar";
+    );
+    var res = try bart.parse(alloc, src);
+    res.deinit(alloc);
+}
