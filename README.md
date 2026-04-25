@@ -29,6 +29,7 @@ server {
         file = server.log;
 
         # it has lists too
+        #   (commas are for elderly languages, whitespace is enough)
         events = [
             error
             info
