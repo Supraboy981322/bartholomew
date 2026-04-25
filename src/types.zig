@@ -166,17 +166,7 @@ pub const Entry = struct {
         var itr = std.mem.splitScalar(u8, path, '>');
         var cur:*Entry = self;
         while (itr.next()) |name| {
-
-            if (cur.value != .category)
-                return error.NotCategory;
-
-            cur = inner: for (cur.value.category) |entry| {
-                if (std.mem.eql(u8, entry.name, name)) {
-                    break :inner entry;
-                }
-            } else
-                return error.FieldNotFound;
-
+            cur = try cur.getAny(name);
             if (itr.peek()) |_| if (cur.value != .category)
                 return error.NotCategory;
         }
