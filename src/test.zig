@@ -122,3 +122,13 @@ test "single field" {
     var res = try bart.parse(alloc, src);
     res.deinit(alloc);
 }
+
+test "looks like (helper)" {
+    try std.testing.expect(bart.looks_like(@constCast("foo")) == .string);
+    try std.testing.expect(bart.looks_like(@constCast("\"foo\"")) == .string);
+
+    try std.testing.expect(bart.looks_like(@constCast("true")) == .bool);
+    try std.testing.expect(bart.looks_like(@constCast("false")) == .bool);
+
+    try std.testing.expect(bart.looks_like(@constCast("123456789")) == .number);
+}
