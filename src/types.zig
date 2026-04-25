@@ -128,6 +128,7 @@ pub const Entry = struct {
 
 pub const SerializeOpts = struct {
     skip_root:bool = true,
+    use_newline:bool = true,
     tab:TabOpts = .{
         .width = 1,
         .char = '\t',
@@ -148,6 +149,7 @@ pub const SerializeOpts = struct {
     pub fn compact(self:SerializeOpts) SerializeOpts {
         var new = self;
         new.tab = .none;
+        new.use_newline = false;
         return new;
     }
 

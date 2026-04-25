@@ -168,19 +168,21 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) !
 
         for (0..(entry_offset-1) * opts.tab.width) |_|
             try res.append(alloc, opts.tab.char);
-        try res.print(alloc, "{s} ", .{entry.name});
+
+        try res.print(alloc, "{s}{s}", .{entry.name, if (opts.tab.width > 0) " "  else ""});
+
         switch (entry.value) {
-            .number => |n| try res.print(alloc, "= {d};", .{n}),
+            .number => |n| try res.print(alloc, "={s}{d};", .{if (opts.tab.width > 0) " " else "", n}),
             .string => |str| {
                 const slice = try hlp.quote(alloc, str, '"');
                 defer alloc.free(slice);
-                try res.print(alloc, "= {s};", .{slice});
+                try res.print(alloc, "={s}{s};", .{if (opts.tab.width > 0) " " else "", slice});
             },
 
-            .bool => |v| try res.print(alloc, "{};", .{v}),
+            .bool => |v| try res.print(alloc, "={s}{};", .{if (opts.tab.width > 0) " "  else "", v}),
 
             .list => |list| {
-                try res.appendSlice(alloc, "= [\n");
+                try res.print(alloc, "={s}[\n", .{if (opts.tab.width > 0) " " else ""});
                 for (list) |item| {
                     for (0..(entry_offset) * opts.tab.width) |_|
                         try res.append(alloc, opts.tab.char);
@@ -194,7 +196,10 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) !
                         .bool => |v| try res.print(alloc, "{}", .{v}),
                         else => unreachable,
                     }
-                    try res.append(alloc, '\n');
+                    if (opts.use_newline)
+                        try res.append(alloc, '\n')
+                    else
+                        try res.append(alloc, ' ');
                 }
                 for (0..(entry_offset-1) * opts.tab.width) |_|
                     try res.append(alloc, opts.tab.char);
@@ -203,18 +208,23 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) !
             .category => {
                 const slice = try serialize(alloc, entry, opts);
                 defer alloc.free(slice);
-                try res.print(alloc, "{{\n{s}\n", .{slice});
+                try res.print(alloc, "{{{s}{s}{s}", .{
+                    if (opts.use_newline) "\n" else "",
+                    slice,
+                    if (opts.use_newline) "\n" else ""
+                });
                 for (0..(entry_offset-1) * opts.tab.width) |_|
                     try res.append(alloc, opts.tab.char);
                 try res.append(alloc, '}');
             },
         }
-        try res.append(alloc, '\n');
+        if (opts.use_newline)
+            try res.append(alloc, '\n');
     }
 
     if (!opts.skip_root)
         try res.append(alloc, '}')
-    else
+    else if (opts.use_newline)
         _ = res.pop(); //remove trailing newline
 
     return res.toOwnedSlice(alloc);
