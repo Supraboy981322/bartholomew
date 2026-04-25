@@ -3,6 +3,7 @@ const hlp = @import("helpers.zig");
 const types = @import("types.zig");
 
 pub const Entry = types.Entry;
+pub const EntryValue = Entry.EntryValue;
 pub const SerializeOpts = types.SerializeOpts;
 pub const AppendError = types.Entry.AppendError;
 pub const ParseError = types.ParseError;
