@@ -3,8 +3,6 @@
     .version = "0.9.0",
     .fingerprint = 0x43cd647822a94cb9,
 
-    // TODO: figure out the absolute oldest version it works on
-    //  (with no modification)
     .minimum_zig_version = "0.16.0",
 
     .dependencies = .{},
