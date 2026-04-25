@@ -102,3 +102,14 @@ test "compact serialization" {
     defer alloc.free(serialized);
     try std.testing.expectEqualSlices(u8, "foo{bar=\"baz\";}", serialized);
 }
+
+test "quote string" {
+    const alloc = std.testing.allocator;
+    const src = @constCast(
+        \\foo
+    );
+
+    const quoted = try bart.quote(alloc, src, '"');
+    defer alloc.free(quoted);
+    try std.testing.expectEqualSlices(u8, "\"foo\"", quoted);
+}
