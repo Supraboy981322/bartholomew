@@ -30,6 +30,9 @@ pub const Entry = struct {
         list:[]EntryValue,
     };
 
+    pub const ValueType = std.meta.Tag(EntryValue);
+
+
     pub const skeleton:Entry = .{
         .name = "",
         .value = .{ .number = 0 },
