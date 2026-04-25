@@ -181,3 +181,21 @@ test "traversal basic" {
     const value = try res.traverse(.string, "foo");
     try std.testing.expectEqualSlices(u8, value, "bar");
 }
+
+test "traversal ever-so-slightly more complicated" {
+    const src =
+        \\foo {
+        \\  bar {
+        \\    baz = 1234;
+        \\  }
+        \\}
+    ;
+
+    const alloc = std.testing.allocator;
+    var res = try bart.parse(alloc, @constCast(src));
+    defer res.deinit(alloc);
+
+    var category = try res.traverse(.category, "foo>bar");
+    const value = @constCast(&category).traverse(.number, "baz");
+    try std.testing.expectEqual(value, 1234);
+}
