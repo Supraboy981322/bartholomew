@@ -119,8 +119,14 @@ test "single field" {
     const src = @constCast(
         \\foo = "bar";
     );
+
     var res = try bart.parse(alloc, src);
-    res.deinit(alloc);
+    defer res.deinit(alloc);
+
+    const serialized = try bart.serialize(alloc, &res, .default);
+    defer alloc.free(serialized);
+
+    try std.testing.expectEqualSlices(u8, src, serialized);
 }
 
 test "looks like (helper)" {
