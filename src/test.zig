@@ -138,3 +138,33 @@ test "looks like (helper)" {
 
     try std.testing.expect(bart.looks_like(@constCast("123456789")) == .number);
 }
+
+test "test the example" {
+    const src = @constCast(
+        \\name = "me server";
+        \\server {
+        \\    port = 4389;
+        \\    multi_threaded = false;
+        \\    log {
+        \\        enable = true;
+        \\        supress_requests = true;
+        \\        file = server.log;
+        \\        events = [
+        \\            error
+        \\            info
+        \\        ]
+        \\    }
+        \\}
+    );
+
+    const alloc = std.testing.allocator;
+    var res = try bart.parse(alloc, src);
+    defer res.deinit(alloc);
+
+    var opts = @as(bart.SerializeOpts, .default).set_tab(' ').expand_tab(4);
+    opts.use_no_quotes = true;
+    const serialized = try bart.serialize(alloc, &res, opts);
+    defer alloc.free(serialized);
+
+    try std.testing.expectEqualSlices(u8, src, serialized);
+}
