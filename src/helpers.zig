@@ -63,3 +63,10 @@ pub fn validate(alloc:std.mem.Allocator, src:[]u8) !bool {
     res.deinit(alloc);
     return true;
 }
+
+pub fn contains_any_of(str:[]u8, things:[]u8) bool {
+    return for (str) |b| {
+        if (std.mem.count(u8, things, &[_]u8{b}) > 0) break true;
+    } else
+        false;
+}
