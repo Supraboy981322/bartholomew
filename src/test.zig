@@ -1,6 +1,8 @@
 const std = @import("std");
 const bart = @import("bart.zig");
 
+const Entry = bart.Entry;
+
 const assert = std.debug.assert;
 
 test "parse test" {
@@ -78,4 +80,23 @@ test "bad input" {
             buf[i] = chars[random.uintAtMost(usize, chars.len-1)];
         if (try bart.validate(alloc, &buf)) unreachable; //returned that Bartholomew is valid (bad) (garbage input)
     }
+}
+
+test "compact serialization" {
+    var debug_alloc = std.heap.DebugAllocator(.{}).init;
+    defer _ = debug_alloc.deinit();
+    const alloc = debug_alloc.allocator();
+
+    const src = @constCast(
+        \\foo {
+        \\  bar = "baz";
+        \\}
+    );
+
+    var res = try bart.parse(alloc, src);
+    defer res.deinit(alloc);
+
+    const serialized = try bart.serialize(alloc, &res, @as(bart.SerializeOpts, .default).compact());
+    defer alloc.free(serialized);
+    try std.testing.expectEqualSlices(u8, "foo{bar=\"baz\";}", serialized);
 }
