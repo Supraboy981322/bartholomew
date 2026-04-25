@@ -1,5 +1,6 @@
 const std = @import("std");
 const types = @import("types.zig");
+const bart = @import("bart.zig");
 
 const Entry = types.Entry;
 const EntryValue = Entry.EntryValue;
@@ -46,4 +47,19 @@ pub fn mk_category(alloc:std.mem.Allocator) !EntryValue {
     return .{
         .category = try alloc.alloc(*Entry, 0),
     };
+}
+
+pub fn validate(alloc:std.mem.Allocator, src:[]u8) !bool {
+    var arena = std.heap.ArenaAllocator.init(alloc);
+    defer _ = arena.deinit();
+
+    var res = bart.parse(arena.allocator(), src) catch |e|
+        return
+            if (e != error.OutOfMemory)
+                false
+            else
+                e; //OOM
+
+    res.deinit(alloc);
+    return true;
 }
