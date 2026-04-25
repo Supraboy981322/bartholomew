@@ -7,6 +7,8 @@ pub const SerializeOpts = types.SerializeOpts;
 pub const AppendError = types.Entry.AppendError;
 pub const ParseError = types.ParseError;
 
+pub const mk_category = hlp.mk_category;
+
 pub fn parse(
     alloc:std.mem.Allocator,
     src:[]u8

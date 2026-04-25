@@ -38,3 +38,9 @@ pub fn parse_value(alloc:std.mem.Allocator, in:[]u8) !types.Entry.EntryValue {
         else => unreachable,
     };
 }
+
+pub fn mk_category(alloc:std.mem.Allocator) !EntryValue {
+    return .{
+        .category = try alloc.alloc(*Entry, 0),
+    };
+}
