@@ -83,10 +83,20 @@ pub const Entry = struct {
 
     pub fn deinit(self:*Entry, alloc:std.mem.Allocator) void {
         if (self.is_skeleton) return;
-        if (self.value != .category or !self.parent_category.is_skeleton or self.category_depth > 0)
-            alloc.free(self.name)
-        else if (!std.mem.eql(u8, "root", self.name))
-            std.debug.panic("failed to free non-root category name: |{s}| (depth {d})", .{self.name, self.category_depth});
+
+        {
+            var should_free_name = !self.parent_category.is_skeleton;
+            should_free_name = should_free_name or self.category_depth > 0;
+            should_free_name = should_free_name or self.value != .category;
+            if (should_free_name)
+                alloc.free(self.name)
+            else if (!std.mem.eql(u8, "root", self.name))
+                std.debug.panic(
+                    "failed to free non-root category name: |{s}| (depth {d})",
+                    .{self.name, self.category_depth}
+                );
+        }
+
         switch (self.value) {
             .number, .bool => {},
 
