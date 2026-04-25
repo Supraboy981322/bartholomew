@@ -8,6 +8,10 @@ pub const AppendError = types.Entry.AppendError;
 pub const ParseError = types.ParseError;
 
 pub const mk_category = hlp.mk_category;
+pub const validate = hlp.validate;
+pub const parse_value = hlp.parse_value;
+pub const looks_like = hlp.looks_like;
+pub const quote = hlp.quote;
 
 pub fn parse(
     alloc:std.mem.Allocator,
