@@ -129,6 +129,47 @@ pub const Entry = struct {
         } else
             cur;
     }
+
+    pub fn traverse(
+        self:*Entry,
+        comptime expecting:ValueType,
+        path:[]const u8
+    ) !switch (expecting) {
+        .category => Entry,
+        .string => []u8,
+        .number => i256,
+        .bool => bool,
+        .list => []EntryValue,
+    } {
+        var itr = std.mem.splitScalar(u8, path, '>');
+        var cur:*Entry = self;
+        while (itr.next()) |name| {
+
+            if (cur.value != .category)
+                return error.NotCategory;
+
+            cur = inner: for (cur.value.category) |entry| {
+                if (std.mem.eql(u8, entry.name, name)) {
+                    break :inner entry;
+                }
+            } else
+                return error.FieldNotFound;
+
+            if (itr.peek()) |_| if (cur.value != .category)
+                return error.NotCategory;
+        }
+
+        if (cur.value != expecting)
+            return error.WrongType;
+
+        return switch (expecting) {
+            .string => cur.value.string,
+            .category => cur.*,
+            .bool => cur.value.bool,
+            .list => cur.value.list,
+            .number => cur.value.number,
+        };
+    }
 };
 
 pub const SerializeOpts = struct {
