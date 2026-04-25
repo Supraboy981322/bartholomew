@@ -196,6 +196,7 @@ test "traversal ever-so-slightly more complicated" {
     defer res.deinit(alloc);
 
     var category = try res.traverse(.category, "foo>bar");
-    const value = @constCast(&category).traverse(.number, "baz");
+    try std.testing.expectError(error.WrongType, category.get(.string, "baz"));
+    const value = try category.get(.number, "baz");
     try std.testing.expectEqual(value, 1234);
 }
