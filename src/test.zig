@@ -22,9 +22,11 @@ test "serialize test" {
         \\  port = 8945;
         \\  name = "foo";
         \\  description = "foo bar baz";
+        \\  bar = true;
         \\  foo = [
         \\    1
         \\    9875
+        \\    false
         \\    "foo bar baz"
         \\  ]
         \\}
