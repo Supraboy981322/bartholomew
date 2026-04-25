@@ -140,6 +140,18 @@ pub const Entry = struct {
             cur;
     }
 
+    pub fn getAny(
+        self:*Entry,
+        name:[]const u8
+    ) !*Entry {
+        if (self.value != .category)
+            return error.NotCategory;
+        return for (self.value.category) |entry| {
+            if (std.mem.eql(u8, entry.name, name)) break entry;
+        } else
+            error.FieldNotFound;
+    }
+
     pub fn traverse(
         self:*Entry,
         comptime expecting:ValueType,
