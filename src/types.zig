@@ -129,6 +129,7 @@ pub const Entry = struct {
 pub const SerializeOpts = struct {
     skip_root:bool = true,
     use_newline:bool = true,
+    use_no_quotes:bool = false,
     tab:TabOpts = .{
         .width = 1,
         .char = '\t',

@@ -179,7 +179,14 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) !
         switch (entry.value) {
             .number => |n| try res.print(alloc, "={s}{d};", .{if (opts.tab.width > 0) " " else "", n}),
             .string => |str| {
-                const slice = try hlp.quote(alloc, str, '"');
+                var slice = try hlp.quote(alloc, str, '"');
+                if (opts.use_no_quotes and !hlp.contains_any_of(slice, @constCast(&std.ascii.whitespace))) {
+                    var new = try alloc.alloc(u8, slice.len-2);
+                    for (slice[1..slice.len-1], 0..) |b, i|
+                        new[i] = b;
+                    alloc.free(slice);
+                    slice = new;
+                }
                 defer alloc.free(slice);
                 try res.print(alloc, "={s}{s};", .{if (opts.tab.width > 0) " " else "", slice});
             },
@@ -194,7 +201,14 @@ pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) !
                     switch (item) {
                         .number => |n| try res.print(alloc, "{d}", .{n}),
                         .string => |str| {
-                            const slice = try hlp.quote(alloc, str, '"');
+                            var slice = try hlp.quote(alloc, str, '"');
+                            if (opts.use_no_quotes and !hlp.contains_any_of(slice, @constCast(&std.ascii.whitespace))) {
+                                var new = try alloc.alloc(u8, slice.len-2);
+                                for (slice[1..slice.len-1], 0..) |b, i|
+                                    new[i] = b;
+                                alloc.free(slice);
+                                slice = new;
+                            }
                             defer alloc.free(slice);
                             try res.appendSlice(alloc, slice);
                         },
