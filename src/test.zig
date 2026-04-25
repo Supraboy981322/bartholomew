@@ -69,10 +69,7 @@ test "bad input" {
     defer _ = debug_alloc.deinit();
     const alloc = debug_alloc.allocator();
 
-    var io = std.Io.Threaded.init(alloc, .{});
-    defer io.deinit();
-
-    const random = (std.Random.IoSource{ .io = io.io() }).interface();
+    const random = std.crypto.random;
     comptime var chars:[]u8 = @constCast("{};[]=" ++ std.ascii.letters);
     inline for ('0'..'9'+1) |b| chars = @constCast(chars ++ [_]u8{b});
 
