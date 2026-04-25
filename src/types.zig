@@ -152,6 +152,29 @@ pub const Entry = struct {
             error.FieldNotFound;
     }
 
+    pub fn get(
+        self:*Entry,
+        comptime expecting:ValueType,
+        name:[]const u8,
+    ) !switch (expecting) {
+        .category => Entry,
+        .string => []u8,
+        .number => i256,
+        .bool => bool,
+        .list => []EntryValue,
+    } {
+        const value = try self.getAny(name);
+        return if (value.value != expecting)
+            return error.WrongType
+        else switch (expecting) {
+            .category => value.*,
+            .string => value.value.string,
+            .number => value.value.number,
+            .bool => value.value.bool,
+            .list => value.valu.list,
+        };
+    }
+
     pub fn traverse(
         self:*Entry,
         comptime expecting:ValueType,
