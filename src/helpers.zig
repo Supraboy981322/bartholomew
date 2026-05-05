@@ -5,6 +5,13 @@ const bart = @import("bart.zig");
 const Entry = types.Entry;
 const EntryValue = Entry.EntryValue;
 
+pub fn reader_next_or_null(reader:*std.Io.Reader) error{ReadFailed}!?u8 {
+    return reader.takeByte() catch |e| switch (e) {
+        error.EndOfStream => null,
+        inline else => |er| er,
+    };
+}
+
 pub fn quote(alloc:std.mem.Allocator, raw:[]u8, string_type:u8) ![]u8 {
     var res = try std.ArrayList(u8).initCapacity(alloc, raw.len);
     defer res.deinit(alloc);
