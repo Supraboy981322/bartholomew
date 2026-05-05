@@ -12,6 +12,7 @@ pub const ParseError = error{
     UnexpectedOpenBracket,
     UnexpectedCloseBracket,
     UnexpectedEOF,
+    ReadFailed,
 } || Entry.AppendError;
 
 pub const Entry = struct {
