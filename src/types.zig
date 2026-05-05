@@ -30,6 +30,8 @@ pub const Entry = struct {
         list:[]EntryValue,
     };
 
+    pub const ValueType = std.meta.Tag(EntryValue);
+
     pub const skeleton:Entry = .{
         .name = "",
         .value = .{ .number = 0 },
@@ -80,10 +82,20 @@ pub const Entry = struct {
 
     pub fn deinit(self:*Entry, alloc:std.mem.Allocator) void {
         if (self.is_skeleton) return;
-        if (self.value != .category or !self.parent_category.is_skeleton or self.category_depth > 0)
-            alloc.free(self.name)
-        else if (!std.mem.eql(u8, "root", self.name))
-            std.debug.panic("failed to free non-root category name: |{s}| (depth {d})", .{self.name, self.category_depth});
+
+        {
+            var should_free_name = !self.parent_category.is_skeleton;
+            should_free_name = should_free_name or self.category_depth > 0;
+            should_free_name = should_free_name or self.value != .category;
+            if (should_free_name)
+                alloc.free(self.name)
+            else if (!std.mem.eql(u8, "root", self.name))
+                std.debug.panic(
+                    "failed to free non-root category name: |{s}| (depth {d})",
+                    .{self.name, self.category_depth}
+                );
+        }
+
         switch (self.value) {
             .number, .bool => {},
 
@@ -125,6 +137,72 @@ pub const Entry = struct {
             cur = cur.parent_category;
         } else
             cur;
+    }
+
+    pub fn getAny(
+        self:*Entry,
+        name:[]const u8
+    ) !*Entry {
+        if (self.value != .category)
+            return error.NotCategory;
+        return for (self.value.category) |entry| {
+            if (std.mem.eql(u8, entry.name, name)) break entry;
+        } else
+            error.FieldNotFound;
+    }
+
+    pub fn get(
+        self:*Entry,
+        comptime expecting:ValueType,
+        name:[]const u8,
+    ) !switch (expecting) {
+        .category => Entry,
+        .string => []u8,
+        .number => i256,
+        .bool => bool,
+        .list => []EntryValue,
+    } {
+        const value = try self.getAny(name);
+        return if (value.value != expecting)
+            return error.WrongType
+        else switch (expecting) {
+            .category => value.*,
+            .string => value.value.string,
+            .number => value.value.number,
+            .bool => value.value.bool,
+            .list => value.valu.list,
+        };
+    }
+
+    pub fn traverse(
+        self:*Entry,
+        comptime expecting:ValueType,
+        path:[]const u8
+    ) !switch (expecting) {
+        .category => Entry,
+        .string => []u8,
+        .number => i256,
+        .bool => bool,
+        .list => []EntryValue,
+    } {
+        var itr = std.mem.splitScalar(u8, path, '>');
+        var cur:*Entry = self;
+        while (itr.next()) |name| {
+            cur = try cur.getAny(name);
+            if (itr.peek()) |_| if (cur.value != .category)
+                return error.NotCategory;
+        }
+
+        if (cur.value != expecting)
+            return error.WrongType;
+
+        return switch (expecting) {
+            .string => cur.value.string,
+            .category => cur.*,
+            .bool => cur.value.bool,
+            .list => cur.value.list,
+            .number => cur.value.number,
+        };
     }
 };
 
