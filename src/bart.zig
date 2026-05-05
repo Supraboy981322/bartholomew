@@ -14,21 +14,18 @@ pub const parse_value = hlp.parse_value;
 pub const looks_like = hlp.looks_like;
 pub const quote = hlp.quote;
 
-pub fn parse(
+pub fn parse_reader(
     alloc:std.mem.Allocator,
-    src:[]u8
-) (error{OutOfMemory} || ParseError)!Entry {
-
+    reader:*std.Io.Reader
+) (error{ OutOfMemory } || ParseError)!Entry {
     var cur_category:*Entry = @constCast(&try Entry.init(alloc));
     errdefer {
         @constCast(cur_category.get_root() catch unreachable).*.deinit(alloc);
     }
 
-    var b:u8 = if (src.len > 0) src[0] else 0;
     var string:u8,
-        var i:usize,
         var esc:bool
-            = .{ 0, 0, false };
+            = .{ 0, false };
 
     var mem = try std.ArrayList(u8).initCapacity(alloc, 0);
     defer _ = mem.deinit(alloc);
@@ -39,14 +36,7 @@ pub fn parse(
 
     var name:[]u8 = "";
 
-    while (
-        i < src.len
-    ) : ({
-        i += 1;
-        if (i >= src.len) break;
-        b = src[i];
-    }) {
-
+    while (try hlp.reader_next_or_null(reader)) |b| {
         if (string != 0 or esc) {
             // TODO: debug (esc and string == b)
             if (esc) {
@@ -131,8 +121,7 @@ pub fn parse(
 
             // TODO: move this out of switch statement
             '#' => {
-                i += 1;
-                while (src[i] != '\n') : (i += 1) {}
+                while (try hlp.reader_next_or_null(reader)) |c| if (c == '\n') break;
                 continue;
             },
 
@@ -146,6 +135,14 @@ pub fn parse(
     while (cur_category.category_depth > 0)
         cur_category = cur_category.parent_category;
     return cur_category.*;
+}
+
+pub fn parse(
+    alloc:std.mem.Allocator,
+    src:[]u8
+) (error{OutOfMemory} || ParseError)!Entry {
+    var reader:std.Io.Reader = .fixed(src);
+    return parse_reader(alloc, &reader);
 }
 
 pub fn serialize(alloc:std.mem.Allocator, in:*Entry, opts:types.SerializeOpts) ![]u8 {
