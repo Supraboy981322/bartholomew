@@ -117,6 +117,8 @@ pub fn parse_reader(
                     }, name);
                     list.deinit(alloc);
                     cur_list = null;
+                    if (reader.peekByte() catch 0 == ';') reader.toss(1);
+                    name = "";
                 } else
                     return error.UnexpectedCloseBracket;
             },
