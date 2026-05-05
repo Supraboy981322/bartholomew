@@ -44,8 +44,24 @@ pub fn looks_like(in:[]u8) std.meta.Tag(EntryValue) {
 pub fn parse_value(alloc:std.mem.Allocator, in:[]u8) !EntryValue {
     return switch (looks_like(in)) {
         .bool => .{ .bool = std.mem.eql(u8, "true", in) },
-        .string => .{ .string = try alloc.dupe(u8, in) },
-        .number => .{ .number = std.fmt.parseInt(i256, in, 10) catch return error.UncaughtNumberError },
+
+        .string => 
+            if (looks_like(in) != .number) blk :{
+                const unstrung =
+                    if (in.len > 1)
+                        if (in[0] == '"' and in[in.len-1] == '"') in[1..in.len-1] else in
+                    else
+                        in;
+                break :blk .{ .string = try alloc.dupe(u8, unstrung) };
+            } else
+                error.InvalidValue,
+
+        .number => .{
+            .number = std.fmt.parseInt(i256, in, 10) catch {
+                return error.UncaughtNumberError;
+            }
+        },
+
         else => unreachable,
     };
 }

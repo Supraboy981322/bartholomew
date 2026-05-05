@@ -43,9 +43,8 @@ pub fn parse_reader(
                 try mem.append(alloc, b);
                 esc = false;
             } else if (string == b)
-                string = 0
-            else
-                try mem.append(alloc, b);
+                string = 0;
+            try mem.append(alloc, b);
             continue;
         }
 
@@ -72,7 +71,10 @@ pub fn parse_reader(
                 return error.UnexpectedBackslash,
 
             // TODO: maybe a little refactor for single quote
-            '"' => string = b,
+            '"' => {
+                string = b;
+                try mem.append(alloc, b);
+            },
 
             ';' => {
                 if (mem.items.len < 1)
