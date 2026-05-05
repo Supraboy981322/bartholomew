@@ -200,3 +200,14 @@ test "traversal ever-so-slightly more complicated" {
     const value = try category.get(.number, "baz");
     try std.testing.expectEqual(value, 1234);
 }
+
+test "string parsing as correct type" {
+    const src =
+        \\foo = "000";
+    ;
+    const alloc = std.testing.allocator;
+    var res = try bart.parse(alloc, @constCast(src));
+    defer res.deinit(alloc);
+
+    try std.testing.expect(if (res.get(.string, "foo")) |_| true else |_| false);
+}
