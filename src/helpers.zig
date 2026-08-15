@@ -29,7 +29,8 @@ pub fn quote(alloc:std.mem.Allocator, raw:[]u8, string_type:u8) ![]u8 {
 }
 
 pub fn looks_like(in:[]u8) std.meta.Tag(EntryValue) {
-    _ = for (in) |b| {
+    if (in.len == 0) return .string;
+    _ = for (if (in[0] == '-') in[@min(1, in.len-1)..] else in) |b| {
         if (!std.ascii.isDigit(b)) break null;
     } else
         return .number;

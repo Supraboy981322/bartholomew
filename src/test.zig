@@ -211,3 +211,15 @@ test "string parsing as correct type" {
 
     try std.testing.expect(if (res.get(.string, "foo")) |_| true else |_| false);
 }
+
+test "negative number" {
+    const src =
+        \\foo = -1024;
+    ;
+    const alloc = std.testing.allocator;
+    var res = try bart.parse(alloc, @constCast(src));
+    defer res.deinit(alloc);
+
+    const n = try res.get(.number, "foo");
+    try std.testing.expect(n == -1024);
+}
